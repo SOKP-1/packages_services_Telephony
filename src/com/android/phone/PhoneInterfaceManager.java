@@ -81,6 +81,9 @@ public class PhoneInterfaceManager extends ITelephony.Stub implements CallModele
     private static final int CMD_SILENCE_RINGER = 6;
     private static final int CMD_TOGGLE_2G = 7; // used in screen action implementation
     private static final int CMD_TOGGLE_LTE = 8; // not used yet
+    private static final int MESSAGE_GET_PREFERRED_NETWORK_TYPE = 7;
+    private static final int MESSAGE_SET_PREFERRED_NETWORK_TYPE = 8;
+    private static final int CMD_TOGGLE_STATE = 9;
 
     /** The singleton instance. */
     private static PhoneInterfaceManager sInstance;
@@ -195,6 +198,10 @@ public class PhoneInterfaceManager extends ITelephony.Stub implements CallModele
                     synchronized (request) {
                         request.notifyAll();
                     }
+                    break;
+
+                case CMD_TOGGLE_STATE:
+                    // nothing here
                     break;
 
                 default:
@@ -392,6 +399,13 @@ public class PhoneInterfaceManager extends ITelephony.Stub implements CallModele
                 mMainThreadHandler.obtainMessage(CMD_TOGGLE_2G));
         Settings.Secure.putInt(mApp.getContentResolver(),
                 Settings.Global.PREFERRED_NETWORK_MODE, network);
+    }
+
+    public void toggleMobileNetwork(int networkStatus) {
+        mPhone.setPreferredNetworkType(networkStatus,
+                mMainThreadHandler.obtainMessage(CMD_TOGGLE_STATE));
+        android.provider.Settings.Global.putInt(mApp.getContentResolver(),
+                android.provider.Settings.Global.PREFERRED_NETWORK_MODE, networkStatus);
     }
 
     private boolean showCallScreenInternal(boolean specifyInitialDialpadState,
