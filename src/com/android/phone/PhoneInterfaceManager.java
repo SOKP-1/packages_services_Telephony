@@ -1,7 +1,4 @@
 /*
- * Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
- * Not a Contribution.
- *
  * Copyright (C) 2006 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -164,9 +161,8 @@ public class PhoneInterfaceManager extends ITelephony.Stub {
                         // CDMA: If the user presses the Power button we treat it as
                         // ending the complete call session
                         hungUp = PhoneUtils.hangupRingingAndActive(mPhone);
-                    } else if (phoneType == PhoneConstants.PHONE_TYPE_GSM ||
-                            phoneType == PhoneConstants.PHONE_TYPE_IMS) {
-                        // GSM/IMS: End the call as per the Phone state
+                    } else if (phoneType == PhoneConstants.PHONE_TYPE_GSM) {
+                        // GSM: End the call as per the Phone state
                         hungUp = PhoneUtils.hangup(mCM);
                     } else {
                         throw new IllegalStateException("Unexpected phone type: " + phoneType);
@@ -457,6 +453,8 @@ public class PhoneInterfaceManager extends ITelephony.Stub {
         int [] resultArray = supplyPukReportResult(puk, pin);
         return (resultArray[0] == PhoneConstants.PIN_RESULT_SUCCESS) ? true : false;
     }
+
+    /** {@hide} */
     public int[] supplyPinReportResult(String pin) {
         enforceModifyPermission();
         final UnlockSim checkSimPin = new UnlockSim(mPhone.getIccCard());
@@ -465,7 +463,6 @@ public class PhoneInterfaceManager extends ITelephony.Stub {
     }
 
     /** {@hide} */
-
     public int[] supplyPukReportResult(String puk, String pin) {
         enforceModifyPermission();
         final UnlockSim checkSimPuk = new UnlockSim(mPhone.getIccCard());
@@ -474,7 +471,7 @@ public class PhoneInterfaceManager extends ITelephony.Stub {
     }
 
     /**
-     * Helper thread to turn async call to {@link SimCard#supplyPin} into
+     * Helper thread to turn async call to SimCard#supplyPin into
      * a synchronous one.
      */
     private static class UnlockSim extends Thread {
@@ -580,7 +577,7 @@ public class PhoneInterfaceManager extends ITelephony.Stub {
     }
 
     public boolean isRadioOn() {
-        return mPhone.isRadioOn();
+        return mPhone.getServiceState().getVoiceRegState() != ServiceState.STATE_POWER_OFF;
     }
 
     public void toggleRadioOnOff() {
@@ -589,7 +586,7 @@ public class PhoneInterfaceManager extends ITelephony.Stub {
     }
     public boolean setRadio(boolean turnOn) {
         enforceModifyPermission();
-        if (mPhone.isRadioOn() != turnOn) {
+        if ((mPhone.getServiceState().getVoiceRegState() != ServiceState.STATE_POWER_OFF) != turnOn) {
             toggleRadioOnOff();
         }
         return true;
@@ -645,13 +642,11 @@ public class PhoneInterfaceManager extends ITelephony.Stub {
     }
 
     public int getDataState() {
-        Phone phone = mApp.getPhone(mApp.getDataSubscription());
-        return DefaultPhoneNotifier.convertDataState(phone.getDataConnectionState());
+        return DefaultPhoneNotifier.convertDataState(mPhone.getDataConnectionState());
     }
 
     public int getDataActivity() {
-        Phone phone = mApp.getPhone(mApp.getDataSubscription());
-        return DefaultPhoneNotifier.convertDataActivityState(phone.getDataActivityState());
+        return DefaultPhoneNotifier.convertDataActivityState(mPhone.getDataActivityState());
     }
 
     @Override
@@ -926,14 +921,5 @@ public class PhoneInterfaceManager extends ITelephony.Stub {
 
     public int getLteOnGsmMode() {
         return mPhone.getLteOnGsmMode();
-    }
-
-    // Gets the retry count during PIN1/PUK1 verification.
-    public int getIccPin1RetryCount() {
-        return mPhone.getIccCard().getIccPin1RetryCount();
-    }
-
-    public void setPhone(Phone phone) {
-        mPhone = phone;
     }
 }
