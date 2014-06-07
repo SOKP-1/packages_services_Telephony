@@ -1251,15 +1251,4 @@ public class PhoneInterfaceManager extends ITelephony.Stub implements CallModele
             mBinder.unlinkToDeath(this, 0);
         }
     }
-
-    @Override
-    public void onModifyCall(Call call) {
-        // no-op
-    }
-
-    @Override
-    public void onActiveSubChanged(int activeSub) {
-        // no-op
-    }
-
 }
