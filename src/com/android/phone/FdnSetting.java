@@ -279,6 +279,9 @@ public class FdnSetting extends PreferenceActivity
                             int attemptsRemaining = msg.arg1;
                             log("Handle EVENT_PIN2_CHANGE_COMPLETE attemptsRemaining="
                                     + attemptsRemaining);
+                            if (ar.exception instanceof RuntimeException) {
+                                displayMessage(R.string.sub_no_sim);
+                            } else {
                             CommandException ce = (CommandException) ar.exception;
                             if (ce.getCommandError() == CommandException.Error.SIM_PUK2) {
                                 // throw an alert dialog on the screen, displaying the
@@ -289,18 +292,19 @@ public class FdnSetting extends PreferenceActivity
                                     .setCancelable(true)
                                     .setOnCancelListener(FdnSetting.this)
                                     .create();
-                                a.getWindow().addFlags(
-                                        WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-                                a.show();
-                            } else {
-                                // set the correct error message depending upon the state.
-                                // Reset the state depending upon or knowledge of the PUK state.
-                                if (!mIsPuk2Locked) {
-                                    displayMessage(R.string.badPin2, attemptsRemaining);
-                                    resetPinChangeState();
+                                    a.getWindow().addFlags(
+                                            WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                                    a.show();
                                 } else {
-                                    displayMessage(R.string.badPuk2, attemptsRemaining);
-                                    resetPinChangeStateForPUK2();
+                                    // set the correct error message depending upon the state.
+                                    // Reset the state depending upon or knowledge of the PUK state.
+                                    if (!mIsPuk2Locked) {
+                                        displayMessage(R.string.badPin2, attemptsRemaining);
+                                        resetPinChangeState();
+                                    } else {
+                                        displayMessage(R.string.badPuk2, attemptsRemaining);
+                                        resetPinChangeStateForPUK2();
+                                    }
                                 }
                             }
                         } else {
